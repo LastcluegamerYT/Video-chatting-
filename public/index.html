@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorful Video Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #video-chat {
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+            overflow: hidden;
+        }
+        video {
+            width: 100%;
+            border-radius: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007BFF;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+        .video-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .video-box {
+            flex: 1;
+            max-width: 45%;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="video-chat">
+        <h1>Colorful Video Chat</h1>
+        <div class="video-container" id="videos">
+            <video id="localVideo" autoplay muted class="video-box"></video>
+        </div>
+        <div id="controls">
+            <button onclick="initializeCall()">Start Call</button>
+            <button id="endCallBtn" class="hidden" onclick="endCall()">❌ End Call</button>
+            <button id="muteBtn" class="hidden" onclick="toggleMute()">🎵 Mute</button>
+            <button id="switchCameraBtn" class="hidden" onclick="switchCamera()">🔁 Switch Camera</button>
+            <button id="toggleCameraBtn" class="hidden" onclick="toggleCamera()">⏸️ Turn Off Camera</button>
+        </div>
+        <div id="modeSelection">
+            <button onclick="selectMode('twoUserRandom')">Two-user Random Chat</button>
+            <button onclick="selectMode('threeUserRandom')">Three-user Random Chat</button>
+            <button onclick="selectMode('private')">Private Friends Chat</button>
+        </div>
+        <div id="privateOptions" class="hidden">
+            <button onclick="createRoom()">Create Room</button>
+            <button onclick="showJoinRoom()">Join Room</button>
+            <div id="joinRoom" class="hidden">
+                <input type="text" id="roomCode" placeholder="Enter Room Code">
+                <button onclick="joinRoom()">Join</button>
+            </div>
+        </div>
+        <div id="roomInfo" class="hidden">
+            <p>Room Code: <span id="roomCodeDisplay"></span></p>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const localVideo = document.getElementById('localVideo');
+        const videos = document.getElementById('videos');
+        const endCallBtn = document.getElementById('endCallBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const switchCameraBtn = document.getElementById('switchCameraBtn');
+        const toggleCameraBtn = document.getElementById('toggleCameraBtn');
+        const controls = document.getElementById('controls');
+        const modeSelection = document.getElementById('modeSelection');
+        const privateOptions = document.getElementById('privateOptions');
+        const joinRoomDiv = document.getElementById('joinRoom');
+        const roomInfo = document.getElementById('roomInfo');
+        const roomCodeDisplay = document.getElementById('roomCodeDisplay');
+
+        let localStream;
+        let remoteStreams = {};
+        let peerConnections = {};
+        let room;
+        let mode;
+
+        const config = {
+            'iceServers': [
+                { 'urls': 'stun:stun.l.google.com:19302' }
+            ]
+        };
+
+        function selectMode(selectedMode) {
+            mode = selectedMode;
+            if (mode === 'private') {
+                privateOptions.classList.remove('hidden');
+            } else {
+                initializeCall();
+            }
+        }
+
+        function createRoom() {
+            room = Math.floor(1000 + Math.random() * 9000).toString();
+            joinRoom(room);
+            roomInfo.classList.remove('hidden');
+            roomCodeDisplay.textContent = room;
+        }
+
+        function showJoinRoom() {
+            joinRoomDiv.classList.remove('hidden');
+        }
+
+        function joinRoom() {
+            room = document.getElementById('roomCode').value || room;
+            socket.emit('join', { room, mode });
+            initializeCall();
+        }
+
+        async function initializeCall() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                localVideo.srcObject = localStream;
+
+                socket.on('new user', userId => {
+                    const peerConnection = createPeerConnection(userId);
+                    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+                    peerConnection.createOffer().then(offer => {
+                        return peerConnection.setLocalDescription(offer);
+                    }).then(() => {
+                        socket.emit('message', { to: userId, data: { 'sdp': peerConnection.localDescription } });
+                    });
+                });
+
+                socket.on('message', ({ from, data }) => {
+                    const userId = from;
+
+                    if (data.sdp) {
+                        const peerConnection = peerConnections[userId] || createPeerConnection(userId);
+                        peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp)).then(() => {
+                            if (peerConnection.remoteDescription.type === 'offer') {
+                                peerConnection.createAnswer().then(answer => {
+                                    return peerConnection.setLocalDescription(answer);
+                                }).then(() => {
+                                    socket.emit('message', { to: userId, data: { 'sdp': peerConnection.localDescription } });
+                                });
+                            }
+                        });
+                    } else if (data.ice) {
+                        const peerConnection = peerConnections[userId];
+                        if (peerConnection) {
+                            peerConnection.addIceCandidate(new RTCIceCandidate(data.ice));
+                        }
+                    }
+                });
+
+                socket.on('user disconnected', userId => {
+                    if (peerConnections[userId]) {
+                        peerConnections[userId].close();
+                        delete peerConnections[userId];
+                        const remoteVideo = document.getElementById(userId);
+                        if (remoteVideo) {
+                            remoteVideo.srcObject = null;
+                            videos.removeChild(remoteVideo);
+                            delete remoteStreams[userId];
+                        }
+                        arrangeVideos();
+                    }
+                });
+
+                endCallBtn.classList.remove('hidden');
+                muteBtn.classList.remove('hidden');
+                switchCameraBtn.classList.remove('hidden');
+                toggleCameraBtn.classList.remove('hidden');
+                controls.classList.add('hidden');
+                modeSelection.classList.add('hidden');
+            } catch (error) {
+                console.error('Error accessing media devices.', error);
+                alert('Error accessing camera or microphone. Please ensure permissions are granted.');
+            }
+        }
+
+        function createPeerConnection(userId) {
+            const peerConnection = new RTCPeerConnection(config);
+            peerConnections[userId] = peerConnection;
+
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    socket.emit('message', { to: userId, data: { 'ice': event.candidate } });
+                }
+            };
+
+            peerConnection.ontrack = event => {
+                if (!remoteStreams[userId]) {
+                    const remoteVideo = document.createElement('video');
+                    remoteVideo.id = userId;
+                    remoteVideo.autoplay = true;
+                    remoteVideo.classList.add('video-box');
+                    videos.appendChild(remoteVideo);
+                    remoteStreams[userId] = remoteVideo;
+                }
+                remoteStreams[userId].srcObject = event.streams[0];
+                arrangeVideos();
+            };
+
+            return peerConnection;
+        }
+
+        function endCall() {
+            Object.values(peerConnections).forEach(peerConnection => peerConnection.close());
+            localStream.getTracks().forEach(track => track.stop());
+            localVideo.srcObject = null;
+            Object.values(remoteStreams).forEach(remoteVideo => {
+                remoteVideo.srcObject = null;
+                videos.removeChild(remoteVideo);
+            });
+            remoteStreams = {};
+            peerConnections = {};
+
+            endCallBtn.classList.add('hidden');
+            muteBtn.classList.add('hidden');
+            switchCameraBtn.classList.add('hidden');
+            toggleCameraBtn.classList.add('hidden');
+            controls.classList.remove('hidden');
+            modeSelection.classList.remove('hidden');
+            roomInfo.classList.add('hidden');
+        }
+
+        function toggleMute() {
+            localStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
+            muteBtn.textContent = localStream.getAudioTracks()[0].enabled ? '🎵 Mute' : '🎵 Unmute';
+        }
+
+        function switchCamera() {
+            const videoTrack = localStream.getVideoTracks()[0];
+            videoTrack.applyConstraints({
+                advanced: [{ facingMode: videoTrack.getSettings().facingMode === 'user' ? 'environment' : 'user' }]
+            });
+        }
+
+        function toggleCamera() {
+            const videoTrack = localStream.getVideoTracks()[0];
+            videoTrack.enabled = !videoTrack.enabled;
+            toggleCameraBtn.textContent = videoTrack.enabled ? '⏸️ Turn Off Camera' : '⏸️ Turn On Camera';
+        }
+
+        function arrangeVideos() {
+            const videoElements = document.querySelectorAll('.video-box');
+            const count = videoElements.length;
+            videoElements.forEach(video => {
+                video.style.width = count > 1 ? '45%' : '100%';
+            });
+        }
+
+        socket.on('roomCode', room => {
+            roomInfo.classList.remove('hidden');
+            roomCodeDisplay.textContent = room;
+        });
+    </script>
+</body>
+  </html>
+  
