@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(45deg, #0a0a0a, #3a4452);
+            color: #ffffff;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .calculator {
+            border: 1px solid #717377;
+            padding: 20px;
+            border-radius: 16px;
+            background: transparent;
+            box-shadow: 0px 3px 15px rgba(113, 115, 119, 0.5);
+        }
+
+        input {
+            width: 320px;
+            border: none;
+            padding: 24px;
+            margin: 10px;
+            background: transparent;
+            box-shadow: 0px 3px 15px rgba(84, 84, 84, 0.1);
+            font-size: 40px;
+            text-align: right;
+            cursor: pointer;
+            color: #ffffff;
+        }
+
+        input::placeholder {
+            color: #ffffff;
+        }
+
+        button {
+            border: none;
+            width: 60px;
+            height: 60px;
+            margin: 10px;
+            border-radius: 50%;
+            background: transparent;
+            color: #ffffff;
+            font-size: 20px;
+            box-shadow: -8px -8px 15px rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .equalBtn {
+            background-color: #fb7c14;
+        }
+
+        .operator {
+            color: #6dee0a;
+        }
+
+        .menu {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            background: #fb7c14;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0px 3px 15px rgba(113, 115, 119, 0.5);
+        }
+
+        .menu-content {
+            display: none;
+            position: fixed;
+            top: 70px;
+            left: 10px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 3px 15px rgba(113, 115, 119, 0.5);
+            padding: 10px;
+            width: 200px;
+        }
+
+        .menu-content a {
+            display: block;
+            padding: 10px;
+            color: black;
+            text-decoration: none;
+        }
+
+        .menu-content a:hover {
+            background: #f0f0f0;
+        }
+    </style>
+    <title>Chandan Calculator</title>
+</head>
+<body>
+    <div class="menu" onclick="toggleMenu()">☰</div>
+    <div class="menu-content" id="menuContent">
+        <a href="https://www.facebook.com/chandanraj.sitapm" target="_blank">About Developer</a>
+    </div>
+    <div class="container">
+        <div class="header">Chandan Calculator</div>
+        <div class="calculator">
+            <input type="text" id="inputBox" placeholder="0" />
+            <div>
+                <button class="button operator" onclick="speak('AC')">AC</button>
+                <button class="button operator" onclick="speak('DEL')">DEL</button>
+                <button class="button operator" onclick="speak('percent')">%</button>
+                <button class="button operator" onclick="speak('divide')">/</button>
+            </div>
+            <div>
+                <button class="button" onclick="speak('7')">7</button>
+                <button class="button" onclick="speak('8')">8</button>
+                <button class="button" onclick="speak('9')">9</button>
+                <button class="button operator" onclick="speak('multiply')">*</button>
+            </div>
+            <div>
+                <button class="button" onclick="speak('4')">4</button>
+                <button class="button" onclick="speak('5')">5</button>
+                <button class="button" onclick="speak('6')">6</button>
+                <button class="button operator" onclick="speak('minus')">-</button>
+            </div>
+            <div>
+                <button class="button" onclick="speak('1')">1</button>
+                <button class="button" onclick="speak('2')">2</button>
+                <button class="button" onclick="speak('3')">3</button>
+                <button class="button operator" onclick="speak('plus')">+</button>
+            </div>
+            <div>
+                <button class="button" onclick="speak('00')">00</button>
+                <button class="button" onclick="speak('0')">0</button>
+                <button class="button" onclick="speak('dot')">.</button>
+                <button class="button equalBtn" onclick="calculateResult()">=</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        let input = document.getElementById('inputBox');
+        let buttons = document.querySelectorAll('button');
+        let string = "";
+        let arr = Array.from(buttons);
+
+        function toggleMenu() {
+            const menuContent = document.getElementById('menuContent');
+            menuContent.style.display = menuContent.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function speak(text) {
+            const synth = window.speechSynthesis;
+            const utterThis = new SpeechSynthesisUtterance(text);
+            synth.speak(utterThis);
+        }
+
+        function calculateResult() {
+            try {
+                string = eval(string).toString();
+                input.value = string;
+                speak('The result is ' + string);
+            } catch {
+                input.value = "Error";
+                speak('Error');
+            }
+        }
+
+        arr.forEach(button => {
+            button.addEventListener('click', (e) => {
+                if (e.target.innerHTML === '=') {
+                    calculateResult();
+                } else if (e.target.innerHTML === 'AC') {
+                    string = "";
+                    input.value = string;
+                } else if (e.target.innerHTML === 'DEL') {
+                    string = string.substring(0, string.length - 1);
+                    input.value = string;
+                } else {
+                    string += e.target.innerHTML;
+                    input.value = string;
+                }
+            });
+        });
+    </script>
+</body>
+                  </html>
+                  
