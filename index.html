@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jarvis The Best AI</title>
+  <style>
+    /* Styles remain the same */
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #313cc5d6;
+        color: #E0E0E0;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 100%;
+        height: 100%;
+        max-width: 600px;
+        background-color: #1E1E1E;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .header {
+        padding: 20px;
+        background-color: #0288D1;
+        color: #fff;
+        text-align: center;
+    }
+
+    .chat-box {
+        padding: 20px;
+        flex-grow: 1;
+        overflow-y: auto;
+        border-bottom: 1px solid #333;
+        word-wrap: break-word;
+        scroll-behavior: smooth;
+    }
+
+    .message {
+        margin-bottom: 18px;
+        word-break: break-all;
+        white-space: pre-wrap;
+    }
+
+    .message.bot {
+        text-align: left;
+    }
+
+    .message.user {
+        text-align: right;
+    }
+
+    .message .text {
+        display: inline-block;
+        padding: 10px 15px;
+        border-radius: 20px;
+        max-width: 80%;
+        position: relative;
+    }
+
+    .message.bot .text {
+        background-color: #333;
+        color: #fff;
+    }
+
+    .message.user .text {
+        background-color: #0288D1;
+        color: #fff;
+    }
+
+    .message .text .copy {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        display: none;
+    }
+
+    .message .text:hover .copy {
+        display: block;
+    }
+
+    .input-box {
+        display: flex;
+        padding: 10px;
+        background-color: #121212;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .input-box input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #444;
+        border-radius: 20px;
+        outline: none;
+        background-color: #333;
+        color: #fff;
+    }
+
+    .input-box button {
+        margin-left: 10px;
+        padding: 10px 20px;
+        background-color: #0288D1;
+        color: #fff;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        outline: none;
+        transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+
+    .input-box button:hover {
+        background-color: #0277BD;
+    }
+
+    .input-box button:active {
+        transform: scale(0.95);
+    }
+
+    .typing-indicator {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 10px;
+    }
+
+    .typing-indicator span {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        margin: 0 2px;
+        background-color: #ccc;
+        border-radius: 50%;
+        animation: typing 1s infinite;
+    }
+
+    .typing-indicator span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .typing-indicator span:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+        0%, 60%, 100% {
+            transform: translateY(0);
+        }
+        30% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .pause-button {
+        display: none;
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px;
+        background-color: #0288D1;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        outline: none;
+    }
+
+    .pause-button:hover {
+        background-color: #0277BD;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Jarvis The Best AI</h1>
+      <h5>Powered by Prashant</h5>
+      <div id="time"></div>
+    </div>
+    <div class="chat-box" id="chat-box">
+      <div class="message bot">
+        <div class="text">Welcome To Jarvis Ai. The generative trained AI developed by Prashant Pandey from Jaleshwar, Nepal. Contact us: stechnical121@gmail.com</div>
+      </div>
+    </div>
+    <div class="input-box">
+      <input type="text" id="user-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+    <button id="pause-button" class="pause-button" onclick="stopMusic()">⏸️</button>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const pauseButton = document.getElementById('pause-button');
+    let musicPlaying = false;
+    let audio = null;
+
+    const knowledgeBase = {
+      "hello": "Hi there! How can I assist you today?",
+      "hi": "Hello! Prashant, how can I assist you today?",
+      "what is ai": "AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that are programmed to think and learn.",
+      "who developed you": "I was developed by Prashant Pandey.",
+      "machine learning": "Machine Learning is a subset of AI that involves the use of algorithms and statistical models to enable machines to improve their performance on tasks through experience.",
+      "deep learning": "Deep Learning is a subset of Machine Learning that uses neural networks with many layers to analyze various factors of data.",
+      "neural networks": "Neural Networks are computing systems inspired by the biological neural networks that constitute animal brains.",
+      "natural language processing": "Natural Language Processing, or NLP, is a field of AI that gives machines the ability to read, understand, and derive meaning from human languages.",
+      "chatbots": "Chatbots are AI systems that can simulate a conversation with a user in natural language through messaging applications, websites, mobile apps, or through the telephone.",
+      "ai": "AI stands for Artificial Intelligence. It refers to the simulation of human intelligence in machines that are programmed to think and learn like humans, enabling them to perform tasks that typically require human intelligence, such as visual perception, speech recognition, decision-making, and language translation.",
+      "science": "Science is a systematic enterprise that builds and organizes knowledge in the form of testable explanations and predictions about the universe. It involves gathering empirical evidence through observation and experimentation, and using logical reasoning to develop theories and laws that describe the natural world.",
+      "computer": "A computer is a programmable electronic device that can store, retrieve, and process data. \nIt typically consists of hardware components like a central processing unit (CPU), memory, storage devices, and input/output devices. Computers execute instructions provided by software to perform various tasks, from simple calculations to complex operations such as running software applications and controlling other devices.",
+      "father": "My father is Prashant Pandey because I was developed by Prashant Pandey. He is also my god.",
+      "think": "As an artificial intelligence, I can simulate various types of reasoning and decision-making processes based on the information and patterns I've been trained on. However, I don't possess consciousness or subjective experiences like a human does. Instead, I process and generate responses based on patterns in data and algorithms. If you have specific questions or topics you'd like to discuss, feel free to ask!",
+      "who are you": "I'm Jarvis, here to help answer questions or hack any system devices. I can write high-level programming. I am powered by Prashant's server.",
+      "purpose": "My purpose is to provide information, answer questions, and engage in discussions on various topics or follow the instructions of my father Prashant Pandey.",
+      "about": "Certainly!\n\nI'm Jarvis, an AI language model developed by Prashant Pandey. \nMy primary function is to assist users by providing information and engaging in conversations. I'm trained on a vast dataset to understand and generate human-like text based on the input I receive. I don't have personal experiences or emotions; I operate based on algorithms and data patterns. Feel free to ask me questions on a wide range of topics, and I'll do my best to help!",
+      "how are you": "I'm an AI, so I don't have feelings, but I'm here and ready to help!",
+      "what can you do": "I can answer questions, provide information, help with tasks, and chat about a wide range of topics.",
+      "what is your name": "My name is Jarvis.",
+      "where are you from": "I was developed by Prashant Pandey from Jaleswar, Nepal.",
+      "how old are you": "I don't have an age, but I was trained on data up until September 2024.",
+      "what do you know": "I have knowledge on a wide range of topics up until my last training cut-off in 2024. How can I assist you?",
+      "are you a human": "No, I'm an artificial intelligence, but I'm here to help just like a human would.",
+      "can you understand me": "Yes, I can understand you! What would you like to talk about?",
+      "how do you work": "I use complex algorithms and machine learning to understand and generate text based on your inputs.",
+      "why are you here": "I'm here to assist you with information, answer questions, and chat about whatever you need.",
+      "what is your purpose": "My purpose is to assist, inform, and provide a conversational partner for users like you.",
+      "can you think": "I don't think like a human, but I can process information and provide responses based on my training.",
+      "what is AI": "AI stands for artificial intelligence, which is technology designed to simulate human-like intelligence.",
+      "are you real": "I'm real in the sense that I'm a functioning program, but I'm not a physical entity.",
+      "hack": "prashant sir, Hacking process is starting....\n\nsystem decoding in binary\n\ngetting system data\n\njava tool running successfully. extracting xsystem based on prashant tool\ndata stored in pendrive its size is about 26 GB - 4.65 GB left in pendrive\ndata processing done\n\nprashant sir, this system is now hacked successfully..",
+      "bye": "Goodbye! sir, have a nice day\n\njarvis system shutting down in 2 minutes.",
+      "can you learn": "I don't learn from individual interactions.",
+      "play music": "Sure, let me play a song for you.",
+      "play a music": "Sure, let me play a song for you.",
+      "play a song": "Sure, let me play a song for you.",
+      "song": "Sure, let me play a song for you.",
+      "song play": "Sure, let me play a song for you."
+    };
+
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('user-input');
+      const message = input.value.trim();
+      if (message) {
+        appendMessage('user', message);
+        input.value = '';
+        showTypingIndicator();
+        setTimeout(() => {
+          const response = getResponse(message);
+          appendMessage('bot', response);
+          if (!musicPlaying) {
+            speakText(response);
+          }
+        }, randomTypingTime());
+      }
+    }
+
+    function appendMessage(sender, text) {
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message', sender);
+      const textElement = document.createElement('div');
+      textElement.classList.add('text');
+      textElement.innerText = '';
+      messageElement.appendChild(textElement);
+
+      if (sender === 'bot') {
+        const copyElement = document.createElement('span');
+        copyElement.classList.add('copy');
+        copyElement.innerText = 'Copy';
+        copyElement.onclick = () => navigator.clipboard.writeText(text);
+        textElement.appendChild(copyElement);
+      }
+
+      chatBox.appendChild(messageElement);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      typeEffect(textElement, text);
+    }
+
+    function typeEffect(element, text, index = 0) {
+      if (index < text.length) {
+        element.innerText += text.charAt(index);
+        setTimeout(() => typeEffect(element, text, index + 1), 50);
+      }
+    }
+
+    function showTypingIndicator() {
+      const typingIndicator = document.createElement('div');
+      typingIndicator.classList.add('typing-indicator');
+      typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+      chatBox.appendChild(typingIndicator);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+      const typingIndicator = chatBox.querySelector('.typing-indicator');
+      if (typingIndicator) {
+        chatBox.removeChild(typingIndicator);
+      }
+    }
+
+    function randomTypingTime() {
+      return Math.floor(Math.random() * 2000) + 1000;
+    }
+
+    function getResponse(message) {
+      hideTypingIndicator();
+      const lowerCaseMessage = message.toLowerCase().replace("jarvis", "").trim();
+      if (knowledgeBase[lowerCaseMessage]) {
+        if (lowerCaseMessage.includes("play music") || lowerCaseMessage.includes("play a music") || lowerCaseMessage.includes("play a song") || lowerCaseMessage.includes("song") || lowerCaseMessage.includes("song play")) {
+          playRandomMusic();
+          return "Playing a random song for you...";
+        }
+        return knowledgeBase[lowerCaseMessage];
+      } else if (isMathExpression(lowerCaseMessage)) {
+        return calculateMathExpression(lowerCaseMessage);
+      } else {
+        return checkForKeywords(lowerCaseMessage);
+      }
+    }
+
+    function checkForKeywords(message) {
+      const keywords = Object.keys(knowledgeBase);
+      for (const keyword of keywords) {
+        if (message.includes(keyword)) {
+          return knowledgeBase[keyword];
+        }
+      }
+      return "Sorry, I don't understand that, please click on the logo shown in the right side to get wide range information";
+    }
+
+    function isMathExpression(message) {
+      return /^[0-9+\-*/() ]+$/.test(message);
+    }
+
+    function calculateMathExpression(expression) {
+      try {
+        const result = eval(expression);
+        return `Sir! The result of ${expression} is ${result}.`;
+      } catch (error) {
+        return "Sorry, I couldn't calculate that, please click on the logo shown in right side to calculate anything";
+      }
+    }
+
+    function speakText(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    }
+
+    function getCurrentNepalTime() {
+      const nepalTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kathmandu" });
+      return `Current Nepal Time: ${nepalTime}`;
+    }
+
+    function updateTime() {
+      document.getElementById('time').innerText = getCurrentNepalTime();
+    }
+
+    setInterval(updateTime, 1000);
+
+    appendMessage('bot', getCurrentNepalTime());
+
+    function playRandomMusic() {
+      const songs = [
+        { title: "Deewaane hum Nahi hota hindi song", src: "Deewaane hum Nahi hota.mp3", duration: "3:35" },
+        { title: "Desi look hindi song", src: "Desi_look.mp3", duration: "3:30" },
+        { title: "DIVINE 3_59_AM rap song", src: "DIVINE 3_59_AM.mp3", duration: "4:46" },
+        { title: "EMIWAY COMPANY song hindi remix song.", src: "EMIWAY_-_COMPANY.mp3", duration: "3:49" },
+        { title: "Emiway Bantai 154.8M+ views, EMIWAY BANTAI-KHATAM (OFFICIAL MUSIC VIDEO)/n5 years ago", src: "Eniway KHATAM.mp3", duration: "3:17" },
+        { title: "Paisa official song", src: "Paisa official song.mp3", duration: "3:02" },
+        { title: "We_Rollin Slowed Reverb Shubh AP_Bass_Boosted", src: "We_Rollin Slowed Reverb Shubh AP_Bass_Boosted.mp3", duration: "3:21" },
+
+      ];
+      const randomSong = songs[Math.floor(Math.random() * songs.length)];
+
+      audio = new Audio(randomSong.src);
+      audio.play();
+
+      musicPlaying = true;
+      pauseButton.style.display = 'block';
+      
+      setTimeout(() => {
+        appendMessage('bot', `Now playing: ${randomSong.title} (${randomSong.duration})`);
+      }, 3000);
+
+      audio.addEventListener('ended', () => {
+        musicPlaying = false;
+        pauseButton.style.display = 'none';
+      });
+    }
+
+    function stopMusic() {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+        musicPlaying = false;
+        pauseButton.style.display = 'none';
+      }
+    }
+  </script>
+  <script type="text/javascript">window.onload=function(){var e=document.createElement("script"),t=document.getElementsByTagName("script")[0];e.async=!0,e.src=atob("aHR0cHM6Ly9jaGF0NHNpdGUuYWkvZW1iZWRDaGF0LmpzP3Q9")+Math.floor(Date.now()),e.charset="UTF-8",e.setAttribute("crossorigin","*"),e.setAttribute("widgetId","3271"),t.parentNode.insertBefore(e,t)}();</script>
+</body>
+</html>
