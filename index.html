@@ -361,6 +361,15 @@
       }
     }
 
+    const mathPattern = /^(\d+(\.\d+)?\s*[\+\-\*\/]\s*)+\d+(\.\d+)?$/;
+    if (mathPattern.test(lowercaseMessage)) {
+        try {
+            const result = eval(lowercaseMessage);
+            return `The result is: ${result}`;
+        } catch (error) {
+            return "Sorry, I couldn't calculate that.";
+        }
+    
     function speakText(text) {
       const utterance = new SpeechSynthesisUtterance(text);
       speechSynthesis.speak(utterance);
