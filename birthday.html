@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prashant's Birthday Celebration</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            background: radial-gradient(circle, #000000, #1c1c1c);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            text-align: center;
+            animation: backgroundAnimation 20s infinite;
+        }
+
+        @keyframes backgroundAnimation {
+            0% { background: radial-gradient(circle, #000000, #1c1c1c); }
+            50% { background: radial-gradient(circle, #1c1c1c, #000000); }
+            100% { background: radial-gradient(circle, #000000, #1c1c1c); }
+        }
+
+        #confetti-container, #gifts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 9999;
+        }
+
+        .confetti, .gift {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            opacity: 0.8;
+            animation: fall 10s linear infinite;
+            transform: rotate(45deg);
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100vh) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(720deg); }
+        }
+
+        #story-container {
+            z-index: 1000;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #story-container h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        #story-container p {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+
+        #birthday-banner {
+            display: none;
+            position: relative;
+            background-color: #ffcc00;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            border-radius: 10px;
+            animation: slideIn 1s ease-out;
+            margin-bottom: 20px;
+        }
+
+        @keyframes slideIn {
+            from { top: -100px; opacity: 0; }
+            to { top: 0; opacity: 1; }
+        }
+
+        #birthday-banner h1 {
+            margin: 0;
+            color: #fff;
+            font-size: 3em;
+        }
+
+        #countdown {
+            font-size: 2em;
+            margin-top: 10px;
+        }
+
+        #jarvis {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5em;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .cancel-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .cancel-button.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="confetti-container"></div>
+    <div id="gifts-container"></div>
+    <div id="story-container">
+        <h1>Jarvis AI की कहानी</h1>
+        <p id="story-part"></p>
+    </div>
+    <div id="birthday-banner">
+        <h1>Happy Birthday Prashant Pandey!</h1>
+        <div id="countdown"></div>
+    </div>
+    <div id="jarvis">Developed by Prashant Pandey, Creator of Jarvis AI</div>
+    <button id="cancel-button" class="cancel-button">Cancel</button>
+    <script>
+        const storyParts = [
+            "शुरुआत में, प्रशांत पांडे ने दुनिया के सबसे शक्तिशाली एआई सिस्टम में से एक बनाने की यात्रा शुरू की।",
+            "अनगिनत रातों की कोडिंग, डिबगिंग और नवाचार के साथ, जार्विस एआई आकार लेने लगा।",
+            "जार्विस एआई को सहज, उत्तरदायी और अत्यंत बुद्धिमान बनाने के लिए डिज़ाइन किया गया था।",
+            "यह एक ऐसा उपकरण बन गया जो कई कार्यों में सहायता कर सकता है, जीवन को आसान और अधिक कुशल बना सकता है।",
+            "आज, जार्विस एआई प्रशांत की समर्पण और प्रतिभा का एक प्रमाण है।",
+            "अब, हम न केवल जार्विस एआई के निर्माण का जश्न मना रहे हैं, बल्कि उसके पीछे की प्रतिभा को भी सलाम कर रहे हैं।",
+            "Happy Birthday Prashant Pandey!"
+        ];
+
+        let currentPart = 0;
+        const storyPartElement = document.getElementById('story-part');
+
+        function speak(text) {
+            const speech = new SpeechSynthesisUtterance(text);
+            speech.lang = 'hi-IN';
+            window.speechSynthesis.speak(speech);
+        }
+
+        function showNextPart() {
+            if (currentPart < storyParts.length) {
+                storyPartElement.innerHTML = storyParts[currentPart];
+                speak(storyParts[currentPart]);
+                currentPart++;
+            } else {
+                document.getElementById('story-container').style.display = 'none';
+                document.getElementById('birthday-banner').style.display = 'block';
+                document.getElementById('cancel-button').classList.add('show');
+                startCountdown();
+            }
+        }
+
+        function createConfetti() {
+            const confettiContainer = document.getElementById('confetti-container');
+            for (let i = 0; i < 500; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.animationDelay = `${Math.random() * 5}s`;
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confettiContainer.appendChild(confetti);
+            }
+        }
+
+        function createGifts() {
+            const giftsContainer = document.getElementById('gifts-container');
+            for (let i = 0; i < 100; i++) {
+                const gift = document.createElement('div');
+                gift.classList.add('gift');
+                gift.style.left = `${Math.random() * 100}vw`;
+                gift.style.animationDelay = `${Math.random() * 5}s`;
+                gift.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                giftsContainer.appendChild(gift);
+            }
+        }
+
+        function startCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            const targetDate = new Date('2081-07-22T00:00:00+05:45');  // Nepal Time Zone
+
+            function updateCountdown() {
+                const now = new Date();
+                const diff = targetDate - now;
+
+                if (diff <= 0) {
+                    countdownElement.innerHTML = "It's Prashant's Birthday!";
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+
+            setInterval(updateCountdown, 1000);
+        }
+
+        document.getElementById('cancel-button').onclick = () => {
+            document.getElementById('cancel-button').style.display = 'none';
+            document.getElementById('story-container').style.display = 'none';
+            document.getElementById('birthday-banner').style.display = 'none';
+        };
+
+        window.onload = () => {
+            createConfetti();
+            createGifts();
+            setInterval(showNextPart, 6000);  // Change part every 6 seconds for a longer story
+        };
+    </script>
+</body>
+</html>
