@@ -421,21 +421,6 @@
         pauseButton.style.display = 'none';
       }
     }
-        function loadBirthdayCelebration() {
-            const container = document.getElementById('birthday-container');
-            fetch('birthday.html')
-                .then(response => response.text())
-                .then(data => {
-                    container.innerHTML = data;
-                    container.style.display = 'block';
-
-                    // Re-assign the cancel button functionality
-                    document.getElementById('cancel-button').onclick = () => {
-                        container.style.display = 'none';
-                    };
-                })
-                .catch(error => console.error('Error loading birthday celebration:', error));
-              }
   </script>
 <script type="text/javascript">window.onload=function(){var e=document.createElement("script"),t=document.getElementsByTagName("script")[0];e.async=!0,e.src=atob("aHR0cHM6Ly9jaGF0NHNpdGUuYWkvZW1iZWRDaGF0LmpzP3Q9")+Math.floor(Date.now()),e.charset="UTF-8",e.setAttribute("crossorigin","*"),e.setAttribute("widgetId","3271"),t.parentNode.insertBefore(e,t)}();</script>
   <p class="cp-text">© Copyright 2024 Prashant. All rights reserved.</p>
