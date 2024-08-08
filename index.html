@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fun only Game</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #ffcc33, #ff6699);
+            color: #fff;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #container {
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #loading-screen {
+            font-size: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        #game {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            font-size: 18px;
+            padding: 15px 30px;
+            margin: 15px;
+            border: none;
+            border-radius: 30px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+            transform: scale(1.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #feedback {
+            font-size: 24px;
+            margin-top: 20px;
+            animation: fadeIn 1s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        video {
+            margin-top: 20px;
+            border-radius: 15px;
+        }
+
+        #counters {
+            font-size: 18px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        #counters div {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="loading-screen">
+            Loading... <span id="progress">0%</span>
+        </div>
+        <div id="game">
+            <div id="question-container"></div>
+            <button onclick="answer('yes')" class="btn">Yes</button>
+            <button onclick="answer('no')" class="btn">No</button>
+            <div id="feedback" class="hidden"></div>
+            <div id="counters">
+                <div>Correct: <span id="correct-count">0</span></div>
+                <div>Incorrect: <span id="incorrect-count">0</span></div>
+            </div>
+            <video id="video" width="320" height="240" controls class="hidden">
+                <source id="video-source" type="video/mp4">
+            </video>
+        </div>
+    </div>
+    
+    <script>
+        const questions = [
+            { question: "Is Python a programming language?", answer: "yes" },
+            { question: "Is the Earth flat?", answer: "no" },
+            { question: "Is JavaScript used for web development?", answer: "yes" },
+            { question: "Does water boil at 100°C?", answer: "yes" },
+            { question: "Is 2+2 equal to 5?", answer: "no" },
+            { question: "Is HTML a programming language?", answer: "no" },
+            { question: "Is CSS used for styling web pages?", answer: "yes" },
+            { question: "Is the capital of France Paris?", answer: "yes" },
+            { question: "Is the Sun a star?", answer: "yes" },
+            { question: "Is ice cream hot?", answer: "no" },
+            { question: "Is New York the capital of the USA?", answer: "no" },
+            { question: "Does the Moon orbit the Earth?", answer: "yes" },
+            { question: "Is 10 greater than 5?", answer: "yes" },
+            { question: "Is the sky green?", answer: "no" },
+            { question: "Is 7 a prime number?", answer: "yes" },
+            { question: "Is water made of hydrogen and oxygen?", answer: "yes" },
+            { question: "Is fire cold?", answer: "no" },
+            { question: "Is 1+1 equal to 2?", answer: "yes" },
+            { question: "Is chocolate salty?", answer: "no" },
+            { question: "Is the Earth the third planet from the Sun?", answer: "yes" }
+        ];
+
+        let correctCount = 0;
+        let incorrectCount = 0;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let loadingScreen = document.getElementById('loading-screen');
+            let game = document.getElementById('game');
+            let progress = document.getElementById('progress');
+            
+            let loadInterval = setInterval(() => {
+                let currentProgress = parseInt(progress.innerText);
+                if (currentProgress < 100) {
+                    progress.innerText = currentProgress + 10 + '%';
+                } else {
+                    clearInterval(loadInterval);
+                }
+            }, 400);
+
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                game.style.display = 'flex';
+                loadQuestion();
+            }, Math.random() * (7000 - 4000) + 4000); // Random time between 4 to 7 seconds
+
+            let questionContainer = document.getElementById('question-container');
+            let feedback = document.getElementById('feedback');
+            let video = document.getElementById('video');
+            let videoSource = document.getElementById('video-source');
+            let correctCountElement = document.getElementById('correct-count');
+            let incorrectCountElement = document.getElementById('incorrect-count');
+
+            function loadQuestion() {
+                let question = questions[Math.floor(Math.random() * questions.length)];
+                questionContainer.innerText = question.question;
+                questionContainer.setAttribute('data-answer', question.answer);
+            }
+
+            window.answer = function(answer) {
+                let question = questionContainer.innerText;
+                let correctAnswer = questionContainer.getAttribute('data-answer');
+                
+                if (answer === correctAnswer) {
+                    correctCount++;
+                    correctCountElement.innerText = correctCount;
+                    feedback.innerText = 'Correct!';
+                    feedback.style.color = 'green';
+                } else {
+                    incorrectCount++;
+                    incorrectCountElement.innerText = incorrectCount;
+                    feedback.innerText = 'Incorrect!';
+                    feedback.style.color = 'red';
+                }
+                
+                feedback.classList.remove('hidden');
+
+                if (correctCount >= 10) {
+                    videoSource.src = 'correct.mp4';
+                    video.classList.remove('hidden');
+                    video.load();
+                    video.play();
+                } else {
+                    setTimeout(() => {
+                        feedback.classList.add('hidden');
+                        loadQuestion();
+                    }, 2000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
