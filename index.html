@@ -29,9 +29,7 @@
         </div>
         <div id="video-section" class="hidden">
             <video id="video" width="340" height="290" controls>
-                <source id="video-source-2" src="correct2.mp4" type="video/mp4">
-                <source id="video-source-3" src="correct3.mp4" type="video/mp4">
-                <!-- Add more sources as needed -->
+                <!-- No need to include <source> elements initially -->
             </video>
             <div id="reward-message" class="hidden">
                 <p>The reward has disappeared! Want to see it again? Answer 10 questions correctly!</p>
@@ -75,7 +73,6 @@
             const progress = document.getElementById('progress');
             const questionContainer = document.getElementById('question-container');
             const feedback = document.getElementById('feedback');
-            const video = document.getElementById('video');
             const correctCountElement = document.getElementById('correct-count');
             const incorrectCountElement = document.getElementById('incorrect-count');
             const rewardSection = document.getElementById('reward-section');
@@ -152,14 +149,13 @@
                 rewardSection.style.display = 'none';
                 videoSection.style.display = 'block';
 
-                // Randomly select a video source to play
-                const videoSources = document.querySelectorAll('#video source');
-                const randomIndex = Math.floor(Math.random() * videoSources.length);
-                const selectedSource = videoSources[randomIndex];
-                
-                // Set the selected source as the current video source
+                // Randomly select one of the two video files
+                const videos = ['correct.mp4', 'correct2.mp4'];
+                const randomVideo = videos[Math.floor(Math.random() * videos.length)];
+
+                // Set the selected video as the source
                 const videoElement = document.getElementById('video');
-                videoElement.src = selectedSource.src;
+                videoElement.src = randomVideo;
                 videoElement.load(); // Load the new video
                 videoElement.scrollIntoView({ behavior: 'smooth' });
                 videoElement.play();
