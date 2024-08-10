@@ -11,6 +11,7 @@
             padding: 0;
             background-color: #f4f4f4;
             color: #333;
+            transition: background-color 0.3s, color 0.3s;
         }
         header {
             background-color: #007BFF;
@@ -20,10 +21,20 @@
             position: sticky;
             top: 0;
             border-bottom: 2px solid #0056b3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         h1 {
             margin: 0;
             font-size: 1.5em;
+        }
+        .dark-mode-toggle {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.2em;
         }
         .container {
             width: 80%;
@@ -54,19 +65,85 @@
             white-space: pre-wrap;
             font-family: 'Courier New', Courier, monospace;
         }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.3s;
+            opacity: 1;
+            visibility: visible;
+        }
+        .overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .overlay-content {
+            text-align: center;
+        }
+        .overlay-content input {
+            padding: 10px;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+        .overlay-content button {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            background-color: #007BFF;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .overlay-content button:hover {
+            background-color: #0056b3;
+        }
         @media (max-width: 768px) {
             .container {
                 width: 90%;
             }
+        }
+        /* Dark Mode */
+        .dark-mode body {
+            background-color: #333;
+            color: #f4f4f4;
+        }
+        .dark-mode .section {
+            background: #444;
+        }
+        .dark-mode .code-box {
+            background-color: #333;
+            color: #f4f4f4;
+        }
+        .dark-mode header {
+            background-color: #222;
+            color: #ddd;
         }
     </style>
 </head>
 <body>
     <header>
         <h1>Created by Prashant Pandey - Enjoy it</h1>
+        <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
     </header>
 
-    <div class="container">
+    <div class="overlay" id="overlay">
+        <div class="overlay-content">
+            <h2>Please Enter Code to Access Content</h2>
+            <input type="text" id="code-input" placeholder="Enter code">
+            <button onclick="checkCode()">Submit</button>
+            <p>Contact admin - Prashant to get today homework</p>
+        </div>
+    </div>
+
+    <div class="container" id="content">
         <div class="section">
             <h2>4. Single Individual Proprietor Tax Calculation</h2>
             <div class="code-box">
@@ -128,8 +205,8 @@
                 <p>Annual income = Rs. 20,00,000</p>
                 <p>Rs. 20,00,000 = Rs. 6,00,000 at 0% + Rs. 2,00,000 at 10% + Rs. 3,00,000 at 20% + Rs. 9,00,000 at 30% + Rs. 0 at 36%</p>
                 <p># finding them then we get,</p>
-                <p>Income tax = Rs. 0 + Rs. 20,000 + Rs. 60,000 + Rs. 2,70,000 + Rs. 1,08,000</p>
-                <p>= Rs. 4,58,000</p>
+                <p>Income tax = Rs. 0 + Rs. 20,000 + Rs. 60,000 + Rs. 2,70,000</p>
+                <p>= Rs. 3,50,000</p>
 
                 <p>(d) A married proprietor of a firm earns Rs 25,00,000 annually. What is the total tax liability?</p>
                 <p>For married proprietor,</p>
@@ -201,7 +278,7 @@
                 <p>Rs. 40,00,000 = Rs. 5,00,000 at 0% + Rs. 2,00,000 at 10% + Rs. 3,00,000 at 20% + Rs. 10,00,000 at 30% + Rs. 20,00,000 at 36%</p>
                 <p># finding them then we get,</p>
                 <p>Income tax = Rs. 0 + Rs. 20,000 + Rs. 60,000 + Rs. 3,00,000 + Rs. 7,20,000</p>
-                <p>= Rs. 11,00,000</p>
+                <p>= Rs. 10,00,000</p>
 
                 <p>For married proprietor,</p>
                 <p>Annual income = Rs. 42,00,000</p>
@@ -210,9 +287,28 @@
                 <p>Income tax = Rs. 0 + Rs. 20,000 + Rs. 60,000 + Rs. 2,70,000 + Rs. 7,92,000</p>
                 <p>= Rs. 10,42,000</p>
 
-                <p>Therefore, the unmarried proprietor pays more tax than the married proprietor by Rs. 11,00,000 - Rs. 10,42,000 = Rs. 58,000</p>
+                <p>Therefore, the married proprietor pays more tax than the unmarried proprietor by Rs. 10,42,000 - Rs. 10,00,000 = Rs. 42,000</p>
             </div>
         </div>
     </div>
+
+    <script>
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        // Code Validation
+        function checkCode() {
+            const codeInput = document.getElementById('code-input').value;
+            const overlay = document.getElementById('overlay');
+            if (codeInput === 'PRASHANT') {
+                overlay.classList.add('hidden');
+            } else {
+                alert('Incorrect code. Please contact admin - Prashant to get today homework.');
+            }
+        }
+    </script>
 </body>
-</html>
+    </html>
+    
